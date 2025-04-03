@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 import os
 from csv_row import CsvRow
-from menu import Menu, MenuParser, MenuPrinter
+from menu import Menu, MenuParser
 from menu_parsing import (
     ItemType,
     menu_location,
@@ -21,6 +21,7 @@ from menu_parsing import (
     section_slug,
     section_title,
 )
+from menu_printer import MenuPrinter
 
 
 def parse_cmd(html_path: str) -> None:

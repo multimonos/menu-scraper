@@ -1,10 +1,7 @@
 from enum import Enum
-from fractions import Fraction
 from typing import override
 from selectolax.parser import Node
 import re
-
-from menu_parsing import menuitem_type
 
 
 class MenuItemType(Enum):
