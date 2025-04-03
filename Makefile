@@ -22,8 +22,8 @@ help:
 
 scrape:
 	# ls src/*.py | entr -c bash -c "clear && python -u src/main.py scrape https://cactus.test"
-	rm -rf ./data/*.html 
-	ls src/*.py | entr python -u src/main.py scrape https://cactus.test
+	rm -rf ./data/*.html  \
+  && python -u src/main.py scrape https://cactus.test
 
 
 parse-all:
