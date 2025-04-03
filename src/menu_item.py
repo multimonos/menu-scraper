@@ -1,7 +1,8 @@
-from cgi import print_exception
 from enum import Enum
+from fractions import Fraction
 from typing import override
 from selectolax.parser import Node
+import re
 
 from menu_parsing import menuitem_type
 
@@ -73,7 +74,7 @@ class BaseMenuItemParser:
         item.type = self.get_type()
         item.id = self.get_id(node) or ""
         item.title = self.get_title(node) or ""
-        item.prices = self.get_prices(node)
+        item.prices = self.clean_prices(self.get_prices(node))
         item.children = self.get_children(node) or []
         return item
 
@@ -89,10 +90,29 @@ class BaseMenuItemParser:
 
     def get_prices(self, node: Node) -> list[str]:
         nodes = node.css(".price")
+        # print("HTML", node.html)
         return [n.text() for n in nodes]
 
     def get_children(self, node: Node) -> list[MenuItem]:
         return []
+
+    def clean_prices(self, prices: list[str]) -> list[str]:
+        fracmap = {"¼": 0.25, "½": 0.5, "¾": 0.75}
+        nprices: list[str] = []
+        for price in prices:
+            price = price.strip()
+            price = re.sub(r"[\+]", "", price)
+            match = re.match(r"(\d+)?([¼½¾])?", price)
+
+            if match:
+                whole = float(match.group(1)) if match.group(1) else 0.0
+                frac = fracmap.get(match.group(2), 0.0)
+                num = whole + frac
+                nprices.append(f"{num:.2f}")
+            else:
+                print("UNMATCHED", price)
+                nprices.append(price)
+        return nprices
 
 
 class SimpleItemParser(BaseMenuItemParser):
@@ -100,11 +120,22 @@ class SimpleItemParser(BaseMenuItemParser):
     def get_type(self) -> MenuItemType:
         return MenuItemType.Simple
 
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        return [
+            re.sub(r"\s+", "", n.text().strip())
+            for n in node.css(".item-header .price")
+        ]
+
 
 class OptionGroupParser(BaseMenuItemParser):
     @override
     def get_type(self) -> MenuItemType:
         return MenuItemType.OptionGroup
+
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        return ["0.00"]
 
     @override
     def get_children(self, node: Node) -> list[MenuItem]:
@@ -115,6 +146,7 @@ class OptionGroupParser(BaseMenuItemParser):
         for n in nodes:
             parser = OptionItemParser()
             option = parser.create(n)
+            print(option.type, option.prices)
             options.append(option)
 
         return options
@@ -130,6 +162,10 @@ class OptionItemParser(BaseMenuItemParser):
         n = node.css_first("strong")
         return n.text().strip().lower().title() if n else None
 
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        return [re.sub(r"[\s\+]+", "", n.text().strip()) for n in node.css(".price")]
+
 
 class AddonGroupParser(BaseMenuItemParser):
     @override
@@ -140,6 +176,10 @@ class AddonGroupParser(BaseMenuItemParser):
     def get_title(self, node: Node) -> str | None:
         n = node.css_first(".add-on-title")
         return n.text().strip() if n else None
+
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        return ["0.00"]
 
     @override
     def get_children(self, node: Node) -> list[MenuItem]:
@@ -173,3 +213,9 @@ class WineItemParser(BaseMenuItemParser):
     @override
     def get_type(self) -> MenuItemType:
         return MenuItemType.Wine
+
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        prices = [n.text().strip() for n in node.css(".item-header > .price-per-size")]
+        prices.reverse()
+        return prices

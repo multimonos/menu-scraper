@@ -2,7 +2,7 @@ from typing import override
 from selectolax.parser import HTMLParser, Node
 
 from menu_category import MenuCategory, MenuCategoryParser
-from menu_item import MenuItemType
+from menu_item import MenuItem, MenuItemType
 
 
 class Menu:
@@ -43,24 +43,25 @@ class MenuPrinter:
         # menuitems
         i = 1
         for item in category.menuitems:
-            print(
-                " ",
-                str(i).ljust(2),
-                cls.short_type(item.type).ljust(12),
-                item.title,
-                # "|".join(item.prices),
-            )
+            print(" ", str(i).ljust(2), cls.fmt_menuitem(item))
             i += 1
             j = 0
             for child in item.children:
-                print(
-                    " ",
-                    str(j).ljust(2),
-                    cls.short_type(child.type).ljust(12),
-                    "  ",
-                    child.title,
-                )
+                print("    ", str(j).ljust(2), cls.fmt_menuitem(child))
                 j += 1
+
+    @classmethod
+    def fmt_menuitem(cls, item: MenuItem) -> str:
+        return "".join(
+            [
+                cls.short_type(item.type).ljust(12),
+                "  ",
+                item.title,
+                "  $[",
+                "|".join(item.prices),
+                "]",
+            ]
+        )
 
     @staticmethod
     def short_type(x: MenuItemType) -> str:
