@@ -1,10 +1,13 @@
+from cgi import print_exception
 from enum import Enum
 from typing import override
 from selectolax.parser import Node
 
+from menu_parsing import menuitem_type
+
 
 class MenuItemType(Enum):
-    Item = "item"
+    Simple = "simple"
     Option = "option"
     Addon = "addon"
     Wine = "wine"
@@ -13,101 +16,160 @@ class MenuItemType(Enum):
 
 
 class MenuItem:
-    def __init__(self, type: MenuItemType = MenuItemType.Item) -> None:
-        self.type: MenuItemType = type
+    def __init__(self) -> None:
+        self.id: str = ""
+        self.type: MenuItemType = MenuItemType.Simple
         self.title: str = ""
         self.description: str = ""
         self.prices: list[str] = []
         self.children: list[MenuItem] = []
 
-    @classmethod
-    def create(cls, node: Node) -> "MenuItem":
-        raise NotImplemented
-
-    @classmethod
-    def factory(cls, node: Node) -> "MenuItem":
-        """TODO should this be in the MenuItemParser"""
-
-        if not MenuItemParser.is_menuitem(node):
-            raise ValueError("node is not a menuitem")
-
-        if MenuItemParser.is_option_group(node):
-            return OptionGroupMenuItem.create(node)
-
-        elif MenuItemParser.is_addon_group(node):
-            return AddonGroupMenuItem.create(node)
-
-        return MenuItem.create(node)
-
 
 class MenuItemParser:
     @classmethod
-    def is_menuitem(cls, node: Node) -> bool:
+    def parse(cls, node: Node) -> MenuItem:
+        # parser choice
+        parser = SimpleItemParser()
+
+        if cls.is_wine_item(node):
+            parser = WineItemParser()
+
+        elif cls.is_addon_group(node):
+            parser = AddonGroupParser()
+
+        elif cls.is_option_group(node):
+            parser = OptionGroupParser()
+
+        # hydrate
+        item = parser.create(node)
+
+        return item
+
+    @staticmethod
+    def is_menuitem(node: Node) -> bool:
         return "menu-item" in str(node.attributes.get("class"))
 
-    @classmethod
-    def is_option_group(cls, node: Node) -> bool:
+    @staticmethod
+    def is_option_group(node: Node) -> bool:
         addon_title = node.css_first(".add-on-title")
         items = node.css(".menu-item.inline")
         return True if len(items) > 0 and not addon_title else False
 
-    @classmethod
-    def is_addon_group(cls, node: Node) -> bool:
+    @staticmethod
+    def is_addon_group(node: Node) -> bool:
         title = node.css_first(".add-on-title")
         items = node.css(".menu-item.inline")
         return True if len(items) > 0 and title else False
 
+    @staticmethod
+    def is_wine_item(node: Node) -> bool:
+        pricing_model = node.css(".price-per-size")
+        return len(pricing_model) > 0
 
-class WineMenuItem(MenuItem):
-    def __init__(self) -> None:
-        super().__init__(type=MenuItemType.Wine)
+
+class BaseMenuItemParser:
+    def create(self, node: Node) -> MenuItem:
+        item = MenuItem()
+        item.type = self.get_type()
+        item.id = self.get_id(node) or ""
+        item.title = self.get_title(node) or ""
+        item.prices = self.get_prices(node)
+        item.children = self.get_children(node) or []
+        return item
+
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.Simple
+
+    def get_id(self, node: Node) -> str | None:
+        return str(node.attributes.get("data-id")) if node else None
+
+    def get_title(self, node: Node) -> str | None:
+        n = node.css_first(".item-header-label-title")
+        return n.text().strip().lower().title() if n else None
+
+    def get_prices(self, node: Node) -> list[str]:
+        nodes = node.css(".price")
+        return [n.text() for n in nodes]
+
+    def get_children(self, node: Node) -> list[MenuItem]:
+        return []
+
+
+class SimpleItemParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.Simple
+
+
+class OptionGroupParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.OptionGroup
 
     @override
-    @classmethod
-    def create(cls, node: Node) -> "WineMenuItem":
-        o = WineMenuItem()
-        return o
+    def get_children(self, node: Node) -> list[MenuItem]:
+        nodes = node.css(".menu-items .menu-item.inline")
+
+        options: list[MenuItem] = []
+
+        for n in nodes:
+            parser = OptionItemParser()
+            option = parser.create(n)
+            options.append(option)
+
+        return options
 
 
-class OptionGroupMenuItem(MenuItem):
-    def __init__(self) -> None:
-        super().__init__(type=MenuItemType.OptionGroup)
+class OptionItemParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.Option
 
     @override
-    @classmethod
-    def create(cls, node: Node) -> "OptionGroupMenuItem":
-        o = OptionGroupMenuItem()
-        return o
+    def get_title(self, node: Node) -> str | None:
+        n = node.css_first("strong")
+        return n.text().strip().lower().title() if n else None
 
 
-class OptionMenuItem(MenuItem):
-    def __init__(self) -> None:
-        super().__init__(type=MenuItemType.Option)
+class AddonGroupParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.AddonGroup
 
     @override
-    @classmethod
-    def create(cls, node: Node) -> "OptionMenuItem":
-        o = OptionMenuItem()
-        return o
-
-
-class AddonGroupMenuItem(MenuItem):
-    def __init__(self) -> None:
-        super().__init__(type=MenuItemType.AddonGroup)
+    def get_title(self, node: Node) -> str | None:
+        n = node.css_first(".add-on-title")
+        return n.text().strip() if n else None
 
     @override
-    @classmethod
-    def create(cls, node: Node) -> "AddonGroupMenuItem":
-        o = AddonGroupMenuItem()
-        return o
+    def get_children(self, node: Node) -> list[MenuItem]:
+        nodes = node.css(".menu-item.inline")
+
+        options: list[MenuItem] = []
+
+        for n in nodes:
+            parser = AddonItemParser()
+            option = parser.create(n)
+            options.append(option)
+
+        return options
 
 
-class AddonMenuItem(MenuItem):
-    def __init__(self) -> None:
-        super().__init__(type=MenuItemType.Addon)
+class AddonItemParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.Addon
 
     @override
-    @classmethod
-    def create(cls, node: Node) -> "AddonMenuItem":
-        o = AddonMenuItem()
-        return o
+    def get_title(self, node: Node) -> str | None:
+        n = node.css_first(".inline")
+        price = node.css_first(".price")
+        return (
+            n.text().replace(price.text(), "").strip().lower() if n and price else None
+        )
+
+
+class WineItemParser(BaseMenuItemParser):
+    @override
+    def get_type(self) -> MenuItemType:
+        return MenuItemType.Wine

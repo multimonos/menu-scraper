@@ -1,7 +1,9 @@
 from selectolax.parser import HTMLParser, Node
 import csv
+from datetime import datetime
+import os
 from csv_row import CsvRow
-from menu import Menu, MenuParser
+from menu import Menu, MenuParser, MenuPrinter
 from menu_parsing import (
     ItemType,
     menu_location,
@@ -22,13 +24,16 @@ from menu_parsing import (
 
 
 def parse_cmd(html_path: str) -> None:
-    print(f"--- parse --- {html_path}")
+    os.system("clear")
+    print(f"--- parse : {datetime.now().timestamp()} ---")
+    print("file:", html_path)
 
     with open(html_path, "r") as f:
         html = f.read()
 
     menu = MenuParser.parse(html)
-    print(menu)
+    MenuPrinter.print(menu)
+    print(datetime.now().timestamp())
 
 
 def parse_cmd_old(html_path: str) -> None:
