@@ -1,0 +1,2 @@
+TIMEOUT = 3000
+HEADLESS = True
