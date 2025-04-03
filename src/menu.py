@@ -1,8 +1,6 @@
 from typing import override
 from selectolax.parser import HTMLParser, Node
-
 from menu_category import MenuCategory, MenuCategoryParser
-from menu_item import MenuItem, MenuItemType
 
 
 class Menu:

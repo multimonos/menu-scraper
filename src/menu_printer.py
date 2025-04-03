@@ -38,15 +38,31 @@ class MenuPrinter:
     def fmt_menuitem(cls, item: MenuItem) -> str:
         return "".join(
             [
-                cls.short_type(item.type).ljust(12),
+                cls.itemtype(item.type).ljust(12),
                 "  ",
                 item.title,
-                "  $[",
+                "  $ ",
                 "|".join(item.prices),
-                "]",
+                f" #[{','.join(cls.item_tags(item))}]",
+                f" @[{','.join(item.image_ids)}]",
             ]
         )
 
     @staticmethod
-    def short_type(x: MenuItemType) -> str:
+    def item_tags(item: MenuItem) -> list[str]:
+        tags: list[str] = []
+        if item.is_new:
+            tags.append("new")
+        if item.is_glutensmart:
+            tags.append("gluten-smart")
+        if item.is_vegan:
+            tags.append("vegan-friendly")
+        if item.is_vegetarian:
+            tags.append("vegetarian")
+        if item.is_organic:
+            tags.append("organic")
+        return tags
+
+    @staticmethod
+    def itemtype(x: MenuItemType) -> str:
         return str(x).replace("MenuItemType.", "")

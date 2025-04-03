@@ -1,4 +1,5 @@
 from enum import Enum
+from math import isnan
 from typing import override
 from selectolax.parser import Node
 import re
@@ -21,6 +22,12 @@ class MenuItem:
         self.description: str = ""
         self.prices: list[str] = []
         self.children: list[MenuItem] = []
+        self.image_ids: list[str] = []
+        self.is_new: bool = False
+        self.is_glutensmart: bool = False
+        self.is_organic: bool = False
+        self.is_vegan: bool = False
+        self.is_vegetarian: bool = False
 
 
 class MenuItemParser:
@@ -72,7 +79,13 @@ class BaseMenuItemParser:
         item.id = self.get_id(node) or ""
         item.title = self.get_title(node) or ""
         item.prices = self.clean_prices(self.get_prices(node))
-        item.children = self.get_children(node) or []
+        item.children = self.get_children(node)
+        item.image_ids = self.get_image_ids(node)
+        item.is_new = self.get_is_new(node)
+        item.is_glutensmart = self.get_is_glutensmart(node)
+        item.is_organic = self.get_is_organic(node)
+        item.is_vegan = self.get_is_vegan(node)
+        item.is_vegetarian = self.get_is_vegetarian(node)
         return item
 
     def get_type(self) -> MenuItemType:
@@ -87,18 +100,41 @@ class BaseMenuItemParser:
 
     def get_prices(self, node: Node) -> list[str]:
         nodes = node.css(".price")
-        # print("HTML", node.html)
         return [n.text() for n in nodes]
+
+    def get_is_new(self, node: Node) -> bool:
+        el = node.css_first(".feature-tagline")
+        return self.strip(el.text()).lower() == "new" if el else False
+
+    def get_is_glutensmart(self, node: Node) -> bool:
+        el = node.css_first(".note.gluten-smart")
+        return True if el else False
+
+    def get_is_organic(self, node: Node) -> bool:
+        el = node.css_first(".note.organic")
+        return True if el else False
+
+    def get_is_vegan(self, node: Node) -> bool:
+        el = node.css_first(".note.vegan-friendly")
+        return True if el else False
+
+    def get_is_vegetarian(self, node: Node) -> bool:
+        el = node.css_first(".note.vegetarian")
+        return True if el else False
 
     def get_children(self, node: Node) -> list[MenuItem]:
         return []
+
+    def get_image_ids(self, node: Node) -> list[str]:
+        nodes = node.css(".item-image-gallery img[data-image-id]")
+        ids = [str(n.attributes.get("data-image-id")) for n in nodes if nodes]
+        return ids
 
     def clean_prices(self, prices: list[str]) -> list[str]:
         fracmap = {"¼": 0.25, "½": 0.5, "¾": 0.75}
         nprices: list[str] = []
         for price in prices:
-            price = price.strip()
-            price = re.sub(r"[\+]", "", price)
+            price = self.strip(price)
             match = re.match(r"(\d+)?([¼½¾])?", price)
 
             if match:
@@ -107,9 +143,12 @@ class BaseMenuItemParser:
                 num = whole + frac
                 nprices.append(f"{num:.2f}")
             else:
-                print("UNMATCHED", price)
                 nprices.append(price)
         return nprices
+
+    @staticmethod
+    def strip(s: str) -> str:
+        return re.sub(r"\s+", "", s.strip())
 
 
 class SimpleItemParser(BaseMenuItemParser):
@@ -143,7 +182,6 @@ class OptionGroupParser(BaseMenuItemParser):
         for n in nodes:
             parser = OptionItemParser()
             option = parser.create(n)
-            print(option.type, option.prices)
             options.append(option)
 
         return options
