@@ -11,6 +11,7 @@ class MenuCategory:
         self.description: str = ""
         self.menuitems: list[MenuItem] = []
         self.categories: list[MenuCategory] = []
+        self.price_options: list[str] = []
 
     @override
     def __repr__(self) -> str:
@@ -31,6 +32,7 @@ class MenuCategoryParser:
         o.level = level
         o.title = cls.get_title(node) or ""
         o.description = cls.get_description(node) or ""
+        o.price_options = cls.get_price_options(node)
 
         categories.append(o)
 
@@ -72,6 +74,17 @@ class MenuCategoryParser:
     def get_description(node: Node) -> str | None:
         desc = node.css_first(".category-description")
         return desc.text() if desc else None
+
+    @staticmethod
+    def get_price_options(node: Node) -> list[str]:
+        has_subcategories = len(node.css(".sub-categories")) > 0
+        if has_subcategories:
+            return []
+
+        nodes = node.css(".category-header .size")
+        options = [node.text() for node in nodes]
+        options.reverse()
+        return options
 
     @staticmethod
     def get_menuitem_nodes(node: Node, id: str) -> list[Node]:

@@ -16,7 +16,13 @@ class MenuPrinter:
 
     @classmethod
     def print_category(cls, category: MenuCategory):
-        print(category.level, category.title)
+        print(cls.fmt_category_heading(category))
+
+        if category.description:
+            print(
+                f"{'>'.rjust(20)} {category.description[:15]}...{category.description[-15:]}"
+            )
+
         print(" ", len(category.menuitems))
 
         # categories
@@ -28,11 +34,22 @@ class MenuPrinter:
         i = 1
         for item in category.menuitems:
             print(" ", str(i).ljust(2), cls.fmt_menuitem(item))
+            if item.description:
+                print(f"                   > {item.description[:30]}...")
             i += 1
             j = 0
             for child in item.children:
                 print("    ", str(j).ljust(2), cls.fmt_menuitem(child))
                 j += 1
+
+    @classmethod
+    def fmt_category_heading(cls, category: MenuCategory) -> str:
+        options = (
+            "$[" + ",".join(category.price_options) + "]"
+            if category.price_options
+            else ""
+        )
+        return f"{category.level} {category.title.ljust(16)} {options}"
 
     @classmethod
     def fmt_menuitem(cls, item: MenuItem) -> str:
@@ -41,8 +58,7 @@ class MenuPrinter:
                 cls.itemtype(item.type).ljust(12),
                 "  ",
                 item.title,
-                "  $ ",
-                "|".join(item.prices),
+                f" $[{','.join(item.prices)}]",
                 f" #[{','.join(cls.item_tags(item))}]",
                 f" @[{','.join(item.image_ids)}]",
             ]

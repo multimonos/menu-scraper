@@ -21,8 +21,9 @@ class MenuItem:
         self.title: str = ""
         self.description: str = ""
         self.prices: list[str] = []
-        self.children: list[MenuItem] = []
         self.image_ids: list[str] = []
+        self.children: list[MenuItem] = []
+        # attrs
         self.is_new: bool = False
         self.is_glutensmart: bool = False
         self.is_organic: bool = False
@@ -75,17 +76,21 @@ class MenuItemParser:
 class BaseMenuItemParser:
     def create(self, node: Node) -> MenuItem:
         item = MenuItem()
+
         item.type = self.get_type()
         item.id = self.get_id(node) or ""
         item.title = self.get_title(node) or ""
+        item.description = self.get_description(node) or ""
         item.prices = self.clean_prices(self.get_prices(node))
         item.children = self.get_children(node)
         item.image_ids = self.get_image_ids(node)
+        # attrs
         item.is_new = self.get_is_new(node)
         item.is_glutensmart = self.get_is_glutensmart(node)
         item.is_organic = self.get_is_organic(node)
         item.is_vegan = self.get_is_vegan(node)
         item.is_vegetarian = self.get_is_vegetarian(node)
+
         return item
 
     def get_type(self) -> MenuItemType:
@@ -97,6 +102,10 @@ class BaseMenuItemParser:
     def get_title(self, node: Node) -> str | None:
         n = node.css_first(".item-header-label-title")
         return n.text().strip().lower().title() if n else None
+
+    def get_description(self, node: Node) -> str | None:
+        n = node.css_first(".item-description")
+        return n.text() if n else None
 
     def get_prices(self, node: Node) -> list[str]:
         nodes = node.css(".price")
