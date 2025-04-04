@@ -1,3 +1,4 @@
+from types import ClassMethodDescriptorType
 from menu import Menu
 from menu_category import MenuCategory
 from menu_item import MenuItem, MenuItemType
@@ -47,9 +48,9 @@ class ImpexRow:
 class ImpexMenuTransformer:
     fields: list[str] = [
         "action",
-        "item_id",
         "batch_id",
         "type",
+        "item_id",
         "title",
         "prices",
         "image_ids",
@@ -63,15 +64,21 @@ class ImpexMenuTransformer:
         "description",
     ]
 
+    @staticmethod
+    def header_rows(menu: Menu) -> list[str]:
+        return [
+            f"location,{menu.location}",
+            f"page,{menu.page}",
+        ]
+
     @classmethod
     def transform(cls, menu: Menu) -> list[ImpexRow]:
-        # required
-        location = ImpexRow(type="location", item_id=menu.location)
-        page = ImpexRow(type="page", item_id=menu.page)
+        l: list[ImpexRow] = []
 
         # list
-        l: list[ImpexRow] = []
-        l.extend([location, page])
+        # location = ImpexRow(type="location", item_id=menu.location)
+        # page = ImpexRow(type="page", item_id=menu.page)
+        # l.extend([location, page])
 
         for category in menu.categories:
             rows = cls.transform_category(category)
