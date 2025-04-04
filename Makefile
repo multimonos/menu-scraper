@@ -32,8 +32,14 @@ parse-all:
 parse-drink:
 	ls src/*.py | entr python -u src/main.py parse data/cactus-test-locations-crowfoot-menu--drink.html
 
+parse-drink-csv:
+	ls src/*.py | entr python -u src/main.py parse data/cactus-test-locations-crowfoot-menu--drink.html --format=csv
+
 parse-food:
 	ls src/*.py | entr python -u src/main.py parse data/cactus-test-locations-crowfoot-menu--food.html
+
+parse-food-csv:
+	ls src/*.py | entr python -u src/main.py parse data/cactus-test-locations-crowfoot-menu--food.html --format=csv
 
 parse-happy:
 	ls src/*.py | entr python -u src/main.py parse data/cactus-test-locations-crowfoot-menu--happy-hour.html

@@ -1,0 +1,142 @@
+from pydoc import describe
+from menu import Menu
+from menu_category import MenuCategory
+from menu_item import MenuItem, MenuItemType
+
+
+class ImpexRow:
+    def __init__(
+        self,
+        action: str = "",
+        type: str = "",
+        item_id: str = "",
+        shared_id: str = "",
+        title: str = "",
+        description: str = "",
+        prices: str = "",
+        image_ids: str = "",
+        # attrs
+        is_new: str = "",
+        is_glutensmart: str = "",
+        is_organic: str = "",
+        is_vegan: str = "",
+        is_vegetarian: str = "",
+    ) -> None:
+        self.data: dict[str, str] = {}
+        self.data["action"] = action
+        self.data["type"] = type
+        self.data["item_id"] = item_id
+        self.data["shared_id"] = shared_id
+        self.data["title"] = title
+        self.data["description"] = description
+        self.data["prices"] = prices
+        self.data["image_ids"] = image_ids
+        # at.datatrs
+        self.data["is_new"] = is_new
+        self.data["is_glutensmart"] = is_glutensmart
+        self.data["is_organic"] = is_organic
+        self.data["is_vegan"] = is_vegan
+        self.data["is_vegetarian"] = is_vegetarian
+
+    def __getitem__(self, key: str):
+        return self.data[key]
+
+
+class ImpexMenuTransformer:
+    fields: list[str] = [
+        "action",
+        "type",
+        "item_id",
+        "shared_id",
+        "title",
+        "prices",
+        "image_ids",
+        # attrs
+        "is_new",
+        "is_glutensmart",
+        "is_organic",
+        "is_vegan",
+        "is_vegetarian",
+        "description",
+    ]
+
+    @classmethod
+    def transform(cls, menu: Menu) -> list[ImpexRow]:
+        # required
+        location = ImpexRow(type="location", item_id=menu.location)
+        page = ImpexRow(type="page", item_id=menu.page)
+
+        # list
+        l: list[ImpexRow] = []
+        l.extend([location, page])
+
+        for category in menu.categories:
+            rows = cls.transform_category(category)
+            l.extend(rows)
+
+        # items
+        return l
+
+    @classmethod
+    def transform_category(cls, category: MenuCategory) -> list[ImpexRow]:
+        rows: list[ImpexRow] = []
+
+        # category
+        rows.append(
+            ImpexRow(
+                type=f"cat{category.level}",
+                title=Format.title(category.title),
+                description=Format.html(category.description),
+            )
+        )
+
+        # subcategories
+        for subcategory in category.categories:
+            rows.extend(cls.transform_category(subcategory))
+
+        # menuitems
+        for item in category.menuitems:
+            rows.append(cls.transform_menuitem(item))
+
+            for child in item.children:
+                rows.append(cls.transform_menuitem(child))
+
+        return rows
+
+    @classmethod
+    def transform_menuitem(cls, item: MenuItem) -> ImpexRow:
+        return ImpexRow(
+            type=Format.item_type(item.type),
+            item_id=item.id,
+            title=item.title,
+            prices=Format.csv("|", item.prices),
+            image_ids=Format.csv("|", item.image_ids),
+            is_new=Format.yesno(item.is_new),
+            is_glutensmart=Format.yesno(item.is_glutensmart),
+            is_organic=Format.yesno(item.is_organic),
+            is_vegan=Format.yesno(item.is_vegan),
+            is_vegetarian=Format.yesno(item.is_vegetarian),
+            description=Format.html(item.description),
+        )
+
+
+class Format:
+    @staticmethod
+    def yesno(v: bool) -> str:
+        return "yes" if v else "no"
+
+    @staticmethod
+    def item_type(v: str | MenuItemType) -> str:
+        return str(v).replace("MenuItemType.", "").lower().replace("group", "-group")
+
+    @staticmethod
+    def csv(delim: str, v: list[str]) -> str:
+        return delim.join(v)
+
+    @staticmethod
+    def title(v: str) -> str:
+        return v.strip()
+
+    @staticmethod
+    def html(v: str) -> str:
+        return v.strip().replace("\n", "<br/>")

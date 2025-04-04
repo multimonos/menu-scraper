@@ -1,5 +1,4 @@
 from enum import Enum
-from math import isnan
 from typing import override
 from selectolax.parser import Node
 import re
