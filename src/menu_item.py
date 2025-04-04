@@ -168,7 +168,7 @@ class SimpleItemParser(BaseMenuItemParser):
     def get_prices(self, node: Node) -> list[str]:
         return [
             re.sub(r"\s+", "", n.text().strip())
-            for n in node.css(".item-header .price")
+            for n in node.css(".item-header > .price")
         ]
 
 
@@ -179,7 +179,7 @@ class OptionGroupParser(BaseMenuItemParser):
 
     @override
     def get_prices(self, node: Node) -> list[str]:
-        return ["0.00"]
+        return []
 
     @override
     def get_children(self, node: Node) -> list[MenuItem]:
@@ -222,7 +222,7 @@ class AddonGroupParser(BaseMenuItemParser):
 
     @override
     def get_prices(self, node: Node) -> list[str]:
-        return ["0.00"]
+        return []
 
     @override
     def get_children(self, node: Node) -> list[MenuItem]:
@@ -250,6 +250,10 @@ class AddonItemParser(BaseMenuItemParser):
         return (
             n.text().replace(price.text(), "").strip().lower() if n and price else None
         )
+
+    @override
+    def get_prices(self, node: Node) -> list[str]:
+        return [re.sub(r"[\s\+]+", "", n.text().strip()) for n in node.css(".price")]
 
 
 class WineItemParser(BaseMenuItemParser):
