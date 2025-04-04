@@ -10,7 +10,7 @@ class ImpexRow:
         action: str = "",
         type: str = "",
         item_id: str = "",
-        shared_id: str = "",
+        batch_id: str = "",
         title: str = "",
         description: str = "",
         prices: str = "",
@@ -27,7 +27,7 @@ class ImpexRow:
         self.data["action"] = action
         self.data["type"] = type
         self.data["item_id"] = item_id
-        self.data["shared_id"] = shared_id
+        self.data["batch_id"] = batch_id
         self.data["title"] = title
         self.data["description"] = description
         self.data["prices"] = prices
@@ -48,7 +48,7 @@ class ImpexMenuTransformer:
     fields: list[str] = [
         "action",
         "item_id",
-        "shared_id",
+        "batch_id",
         "type",
         "title",
         "prices",

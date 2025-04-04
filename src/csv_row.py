@@ -8,7 +8,7 @@ class CsvRow:
         self.action: str = ""
         self.type: str = type
         self.id: str = id
-        self.shared_id: str = ""
+        self.batch_id: str = ""
         self.title: str = title
         self.description: str = ""
         self.price: float | None = None
@@ -32,7 +32,7 @@ class CsvRow:
             "action": self.action,
             "type": self.type,
             "id": self.id,
-            "shared_id": self.shared_id,
+            "batch_id": self.batch_id,
             "title": self.title,
             "description": self.description,
             "price": str(self.price) if self.price is not None else "",
@@ -55,7 +55,7 @@ class CsvRow:
             "action",
             "type",
             "id",
-            "shared_id",
+            "batch_id",
             "title",
             "description",
             "price",
