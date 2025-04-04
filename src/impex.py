@@ -8,6 +8,8 @@ import json
 class ImpexRow:
     def __init__(
         self,
+        location: str = "",
+        page: str = "",
         action: str = "",
         type: str = "",
         item_id: str = "",
@@ -25,6 +27,8 @@ class ImpexRow:
         custom: str = "",
     ) -> None:
         self.data: dict[str, str] = {}
+        self.data["location"] = location
+        self.data["page"] = page
         self.data["action"] = action
         self.data["type"] = type
         self.data["item_id"] = item_id
@@ -48,6 +52,8 @@ class ImpexRow:
 class ImpexMenuTransformer:
     fields: list[str] = [
         "action",
+        "location",
+        "page",
         "batch_id",
         "type",
         "item_id",
@@ -66,6 +72,7 @@ class ImpexMenuTransformer:
 
     @staticmethod
     def header_rows(menu: Menu) -> list[str]:
+        return []
         return [
             f"location,{menu.location}",
             f"page,{menu.page}",
@@ -81,42 +88,46 @@ class ImpexMenuTransformer:
         # l.extend([location, page])
 
         for category in menu.categories:
-            rows = cls.transform_category(category)
+            rows = cls.transform_category(menu, category)
             l.extend(rows)
 
         # items
         return l
 
     @classmethod
-    def transform_category(cls, category: MenuCategory) -> list[ImpexRow]:
+    def transform_category(cls, menu: Menu, category: MenuCategory) -> list[ImpexRow]:
         rows: list[ImpexRow] = []
 
         # category
         impex_category = ImpexRow(
-            type=f"cat{category.level}",
+            location=menu.location,
+            page=menu.page,
+            type=f"catetory-{category.level}",
             title=Format.title(category.title),
             description=Format.html(category.description),
-            custom=Format.category_price_options(category.price_options),
+            prices=Format.csv("|", category.price_options),
         )
         rows.append(impex_category)
 
         # subcategories
         for subcategory in category.categories:
-            impex_subcategories = cls.transform_category(subcategory)
+            impex_subcategories = cls.transform_category(menu, subcategory)
             rows.extend(impex_subcategories)
 
         # menuitems
         for item in category.menuitems:
-            rows.append(cls.transform_menuitem(item))
+            rows.append(cls.transform_menuitem(menu, item))
 
             for child in item.children:
-                rows.append(cls.transform_menuitem(child))
+                rows.append(cls.transform_menuitem(menu, child))
 
         return rows
 
     @classmethod
-    def transform_menuitem(cls, item: MenuItem) -> ImpexRow:
+    def transform_menuitem(cls, menu: Menu, item: MenuItem) -> ImpexRow:
         return ImpexRow(
+            location=menu.location,
+            page=menu.page,
             type=Format.item_type(item.type),
             item_id=item.id,
             title=item.title,
