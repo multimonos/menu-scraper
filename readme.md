@@ -34,6 +34,9 @@ python -u src/main.py merge-batch \
   --group-by=".+locations-(.+?)-menu-.+"
 ```
 
+## Commands
+Access via `python src/main.py --help`.
+
 ### scrape
 
 Scrape menu data from a website.
