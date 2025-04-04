@@ -1,3 +1,4 @@
+from enum import Enum
 from parse_cmd import parse_cmd
 from scrape_cmd import scrape_cmd
 from typing import Annotated
@@ -7,13 +8,24 @@ import typer
 cli = typer.Typer()
 
 
+class OutputFormat(str, Enum):
+    Text = "text"
+    Csv = "csv"
+
+
 @cli.command()
 def parse(
-    html_file: Annotated[
-        str, typer.Argument(..., help="Path to html file containing menu..")
-    ],
+    path: Annotated[str, typer.Argument(help="Path to html file containing menu..")],
+    output_format: Annotated[
+        OutputFormat,
+        typer.Option(
+            "--format",
+            "-f",
+            help="Output format [text,csv]",
+        ),
+    ] = OutputFormat.Text,
 ):
-    parse_cmd(html_file)
+    parse_cmd(path, output_format)
 
 
 @cli.command()
