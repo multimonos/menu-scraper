@@ -17,13 +17,15 @@ def parse_html_cmd(html_path: str, csv_path: str | None) -> None:
     else:
         rows = ImpexMenuTransformer.transform(menu)
 
-        with open(csv_path, "w", encoding=CSV_ENCODING) as f:
+        with open(csv_path, "w", newline="", encoding=CSV_ENCODING) as f:
             # header rows
             for header_row in ImpexMenuTransformer.header_rows(menu):
                 f.write(f"{header_row}\n")
 
             # content
-            writer = csv.DictWriter(f, fieldnames=ImpexMenuTransformer.fields)
+            writer = csv.DictWriter(
+                f, fieldnames=ImpexMenuTransformer.fields, quoting=csv.QUOTE_ALL
+            )
             writer.writeheader()
             rows = [row.data for row in rows]
             writer.writerows(rows)
