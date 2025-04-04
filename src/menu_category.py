@@ -1,6 +1,6 @@
 from typing import override
 from selectolax.parser import Node
-from menu_item import MenuItem, MenuItemParser
+from menu_item import MenuItem, MenuItemFactory
 
 
 class MenuCategory:
@@ -47,7 +47,7 @@ class MenuCategoryParser:
         menuitem_nodes = cls.get_menuitem_nodes(node, o.id)
 
         for menuitem_node in menuitem_nodes:
-            item = MenuItemParser.parse(menuitem_node)
+            item = MenuItemFactory.parse(menuitem_node)
             o.menuitems.append(item)
 
         return categories

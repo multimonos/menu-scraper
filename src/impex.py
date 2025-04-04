@@ -1,7 +1,7 @@
-from pydoc import describe
 from menu import Menu
 from menu_category import MenuCategory
 from menu_item import MenuItem, MenuItemType
+import json
 
 
 class ImpexRow:
@@ -21,6 +21,7 @@ class ImpexRow:
         is_organic: str = "",
         is_vegan: str = "",
         is_vegetarian: str = "",
+        custom: str = "",
     ) -> None:
         self.data: dict[str, str] = {}
         self.data["action"] = action
@@ -31,6 +32,7 @@ class ImpexRow:
         self.data["description"] = description
         self.data["prices"] = prices
         self.data["image_ids"] = image_ids
+        self.data["custom"] = custom
         # at.datatrs
         self.data["is_new"] = is_new
         self.data["is_glutensmart"] = is_glutensmart
@@ -45,9 +47,9 @@ class ImpexRow:
 class ImpexMenuTransformer:
     fields: list[str] = [
         "action",
-        "type",
         "item_id",
         "shared_id",
+        "type",
         "title",
         "prices",
         "image_ids",
@@ -57,6 +59,7 @@ class ImpexMenuTransformer:
         "is_organic",
         "is_vegan",
         "is_vegetarian",
+        "custom",
         "description",
     ]
 
@@ -82,17 +85,18 @@ class ImpexMenuTransformer:
         rows: list[ImpexRow] = []
 
         # category
-        rows.append(
-            ImpexRow(
-                type=f"cat{category.level}",
-                title=Format.title(category.title),
-                description=Format.html(category.description),
-            )
+        impex_category = ImpexRow(
+            type=f"cat{category.level}",
+            title=Format.title(category.title),
+            description=Format.html(category.description),
+            custom=Format.category_price_options(category.price_options),
         )
+        rows.append(impex_category)
 
         # subcategories
         for subcategory in category.categories:
-            rows.extend(cls.transform_category(subcategory))
+            impex_subcategories = cls.transform_category(subcategory)
+            rows.extend(impex_subcategories)
 
         # menuitems
         for item in category.menuitems:
@@ -140,3 +144,9 @@ class Format:
     @staticmethod
     def html(v: str) -> str:
         return v.strip().replace("\n", "<br/>")
+
+    @staticmethod
+    def category_price_options(v: list[str]) -> str:
+        if not v:
+            return ""
+        return json.dumps({"price_options": Format.csv(",", v)})

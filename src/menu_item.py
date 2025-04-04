@@ -5,7 +5,7 @@ import re
 
 
 class MenuItemType(Enum):
-    Simple = "simple"
+    Item = "item"
     Option = "option"
     Addon = "addon"
     Wine = "wine"
@@ -16,7 +16,7 @@ class MenuItemType(Enum):
 class MenuItem:
     def __init__(self) -> None:
         self.id: str = ""
-        self.type: MenuItemType = MenuItemType.Simple
+        self.type: MenuItemType = MenuItemType.Item
         self.title: str = ""
         self.description: str = ""
         self.prices: list[str] = []
@@ -30,7 +30,7 @@ class MenuItem:
         self.is_vegetarian: bool = False
 
 
-class MenuItemParser:
+class MenuItemFactory:
     @classmethod
     def parse(cls, node: Node) -> MenuItem:
         # parser choice
@@ -46,7 +46,7 @@ class MenuItemParser:
             parser = OptionGroupParser()
 
         # hydrate
-        item = parser.create(node)
+        item = parser.create_menuitem(node)
 
         return item
 
@@ -73,7 +73,7 @@ class MenuItemParser:
 
 
 class BaseMenuItemParser:
-    def create(self, node: Node) -> MenuItem:
+    def create_menuitem(self, node: Node) -> MenuItem:
         item = MenuItem()
 
         item.type = self.get_type()
@@ -93,7 +93,7 @@ class BaseMenuItemParser:
         return item
 
     def get_type(self) -> MenuItemType:
-        return MenuItemType.Simple
+        return MenuItemType.Item
 
     def get_id(self, node: Node) -> str | None:
         return str(node.attributes.get("data-id")) if node else None
@@ -162,7 +162,7 @@ class BaseMenuItemParser:
 class SimpleItemParser(BaseMenuItemParser):
     @override
     def get_type(self) -> MenuItemType:
-        return MenuItemType.Simple
+        return MenuItemType.Item
 
     @override
     def get_prices(self, node: Node) -> list[str]:
@@ -189,7 +189,7 @@ class OptionGroupParser(BaseMenuItemParser):
 
         for n in nodes:
             parser = OptionItemParser()
-            option = parser.create(n)
+            option = parser.create_menuitem(n)
             options.append(option)
 
         return options
@@ -232,7 +232,7 @@ class AddonGroupParser(BaseMenuItemParser):
 
         for n in nodes:
             parser = AddonItemParser()
-            option = parser.create(n)
+            option = parser.create_menuitem(n)
             options.append(option)
 
         return options
