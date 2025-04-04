@@ -49,9 +49,6 @@ class MenuCategoryParser:
         for menuitem_node in menuitem_nodes:
             item = MenuItemParser.parse(menuitem_node)
             o.menuitems.append(item)
-        # for menuitem_node in menuitem_nodes:
-        #     print(menuitem_node.html[:30].strip())
-        # o.menuitems.append(item)
 
         return categories
 
