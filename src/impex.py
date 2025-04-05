@@ -1,4 +1,3 @@
-from types import ClassMethodDescriptorType
 from menu import Menu
 from menu_category import MenuCategory
 from menu_item import MenuItem, MenuItemType
@@ -8,7 +7,7 @@ import json
 class ImpexRow:
     def __init__(
         self,
-        location: str = "",
+        menu: str = "",
         page: str = "",
         action: str = "",
         type: str = "",
@@ -27,7 +26,7 @@ class ImpexRow:
         custom: str = "",
     ) -> None:
         self.data: dict[str, str] = {}
-        self.data["location"] = location
+        self.data["menu"] = menu
         self.data["page"] = page
         self.data["action"] = action
         self.data["type"] = type
@@ -52,7 +51,7 @@ class ImpexRow:
 class ImpexMenuTransformer:
     fields: list[str] = [
         "action",
-        "location",
+        "menu",
         "page",
         "batch_id",
         "type",
@@ -74,7 +73,7 @@ class ImpexMenuTransformer:
     def header_rows(menu: Menu) -> list[str]:
         return []
         return [
-            f"location,{menu.location}",
+            f"menu,{menu.id}",
             f"page,{menu.page}",
         ]
 
@@ -83,9 +82,9 @@ class ImpexMenuTransformer:
         l: list[ImpexRow] = []
 
         # list
-        # location = ImpexRow(type="location", item_id=menu.location)
+        # menu = ImpexRow(type="menu", item_id=menu.id)
         # page = ImpexRow(type="page", item_id=menu.page)
-        # l.extend([location, page])
+        # l.extend([menu, page])
 
         for category in menu.categories:
             rows = cls.transform_category(menu, category)
@@ -100,7 +99,7 @@ class ImpexMenuTransformer:
 
         # category
         impex_category = ImpexRow(
-            location=menu.location,
+            menu=menu.id,
             page=menu.page,
             type=f"catetory-{category.level}",
             title=Format.title(category.title),
@@ -126,7 +125,7 @@ class ImpexMenuTransformer:
     @classmethod
     def transform_menuitem(cls, menu: Menu, item: MenuItem) -> ImpexRow:
         return ImpexRow(
-            location=menu.location,
+            menu=menu.id,
             page=menu.page,
             type=Format.item_type(item.type),
             item_id=item.id,

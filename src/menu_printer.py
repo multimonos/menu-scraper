@@ -7,7 +7,7 @@ class MenuPrinter:
     @classmethod
     def print(cls, menu: Menu) -> None:
         print("---")
-        print("location:", menu.location)
+        print("menu:", menu.id)
         print("page:", menu.page)
         print("---")
         for category in menu.categories:

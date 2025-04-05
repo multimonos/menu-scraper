@@ -4,14 +4,14 @@ from menu_category import MenuCategory, MenuCategoryParser
 
 
 class Menu:
-    def __init__(self, location: str = "", page: str = "") -> None:
-        self.location: str = location
+    def __init__(self, id: str = "", page: str = "") -> None:
+        self.id: str = id
         self.page: str = page
         self.categories: list[MenuCategory] = []
 
     @override
     def __repr__(self) -> str:
-        return f"Menu(location={self.location}, page={self.page})"
+        return f"Menu(id={self.id}, page={self.page})"
 
     def to_csv(self) -> list[list[str]]:
         return []
@@ -41,7 +41,7 @@ class MenuParser:
         if page is None:
             raise ValueError("menu page not found")
 
-        menu = Menu(location=location, page=page)
+        menu = Menu(id=location, page=page)
 
         # categories
         category_nodes = cls.get_category_nodes(body)
