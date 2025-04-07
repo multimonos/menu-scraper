@@ -101,7 +101,7 @@ class ImpexMenuTransformer:
         impex_category = ImpexRow(
             menu=menu.id,
             page=menu.page,
-            type=f"catetory-{category.level}",
+            type=f"category-{category.level}",
             title=Format.title(category.title),
             description=Format.html(category.description),
             prices=Format.csv("|", category.price_options),
