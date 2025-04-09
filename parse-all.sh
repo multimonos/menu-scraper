@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# rm -f ./data/*.csv
+rm -f ./data/*.csv
 
 for src in $(ls data/*.html); do 
   dst=${src/.html/.csv}
