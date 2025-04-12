@@ -13,7 +13,7 @@ class ImpexRow:
         action: str = "",
         type: str = "",
         item_id: str = "",
-        batch_id: str = "",
+        uuid: str = "",
         title: str = "",
         description: str = "",
         prices: str = "",
@@ -32,7 +32,7 @@ class ImpexRow:
         self.data["action"] = action
         self.data["type"] = type
         self.data["item_id"] = item_id
-        self.data["batch_id"] = batch_id
+        self.data["uuid"] = uuid
         self.data["title"] = title
         self.data["description"] = description
         self.data["prices"] = prices
@@ -54,7 +54,7 @@ class ImpexMenuTransformer:
         "action",
         "menu",
         "page",
-        "batch_id",
+        "uuid",
         "type",
         "item_id",
         "title",
@@ -103,7 +103,7 @@ class ImpexMenuTransformer:
             menu=menu.id,
             page=menu.page,
             type=f"category-{category.level}",
-            batch_id=slugify(category.title),
+            uuid=slugify(category.title),
             title=Format.title(category.title),
             description=Format.html(category.description),
             prices=Format.csv("|", category.price_options),
@@ -130,7 +130,7 @@ class ImpexMenuTransformer:
             menu=menu.id,
             page=menu.page,
             type=Format.item_type(item.type),
-            batch_id=item.id,
+            uuid=item.id,
             title=item.title,
             prices=Format.csv("|", item.prices),
             image_ids=Format.csv("|", item.image_ids),
