@@ -1,6 +1,7 @@
 from menu import Menu
 from menu_category import MenuCategory
 from menu_item import MenuItem, MenuItemType
+from slugify import slugify
 import json
 
 
@@ -102,6 +103,7 @@ class ImpexMenuTransformer:
             menu=menu.id,
             page=menu.page,
             type=f"category-{category.level}",
+            batch_id=slugify(category.title),
             title=Format.title(category.title),
             description=Format.html(category.description),
             prices=Format.csv("|", category.price_options),
@@ -128,7 +130,7 @@ class ImpexMenuTransformer:
             menu=menu.id,
             page=menu.page,
             type=Format.item_type(item.type),
-            item_id=item.id,
+            batch_id=item.id,
             title=item.title,
             prices=Format.csv("|", item.prices),
             image_ids=Format.csv("|", item.image_ids),
@@ -156,7 +158,7 @@ class Format:
 
     @staticmethod
     def title(v: str) -> str:
-        return v.strip()
+        return v.strip().lower().title()
 
     @staticmethod
     def html(v: str) -> str:
