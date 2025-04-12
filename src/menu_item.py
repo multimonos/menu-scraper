@@ -221,6 +221,11 @@ class AddonGroupParser(BaseMenuItemParser):
         return n.text().strip() if n else None
 
     @override
+    def get_id(self, node: Node) -> str | None:
+        slug = node.attributes.get("data-slug")
+        return slug if slug else None
+
+    @override
     def get_prices(self, node: Node) -> list[str]:
         return []
 
