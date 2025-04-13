@@ -44,7 +44,7 @@ def parse(
 ):
     typer.echo(f"{html_path}  -->  {output if output else 'None'}")
     parse_html_cmd(html_path, output)
-    # typer.echo(datetime.now().timestamp())
+    typer.echo(datetime.now().timestamp())
 
     # open the output file and dump to stdout
     if validate_output and output:
