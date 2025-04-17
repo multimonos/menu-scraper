@@ -24,21 +24,27 @@ def batch_merge(find: str, group_by: str) -> None:
             groups.setdefault(key, []).append(file)
             ofiles[key] = f"{dirname}/merged_{key}.csv"
 
-    # merge
+    # merge files by grouping
     for k, group in groups.items():
         typer.echo(f"G {k}")
-        items = sorted(list(group))
+        sources = sorted(list(group))
         ofile = ofiles[k]
         linecount = 0
 
+        is_first = True
         output = ""
-        for file in items:
+
+        for file in sources:
             with open(file, "r", encoding=CSV_ENCODING) as f:
                 content = f.read()
-                count = len(content.splitlines())
+                lines = content.splitlines()
+                if not is_first:
+                    lines = list(filter(lambda line: "action" not in line, lines))
+                    is_first = False
+                count = len(lines)
                 linecount += count
                 typer.echo(f"- {str(count).rjust(4)} | {file}")
-                output += content
+                output += "\n".join(lines)
         typer.echo(f"= {str(linecount).rjust(4)} | lines")
 
         with open(ofile, "w", encoding=CSV_ENCODING) as o:

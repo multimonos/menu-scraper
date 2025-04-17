@@ -5,3 +5,9 @@ python -u src/main.py \
   --find="data/*.csv" \
   --group-by=".+locations-(.+?)-menu-.+"
 
+# check header rowcount
+# for x in $(ls data/merged*.csv); do
+#   echo $x
+#   cat $x |grep 'action' |wc -l
+# done
+
