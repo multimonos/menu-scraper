@@ -14,3 +14,6 @@ help:
 
 pipeline:
 	python src/main.py scrape https://cactus.test && ./parse-all.sh && ./merge-all.sh && echo "done"
+
+parse-and-merge:
+	./parse-all.sh && ./merge-all.sh && echo "done"

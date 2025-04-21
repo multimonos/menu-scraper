@@ -32,6 +32,7 @@ class ImpexRow:
         self.data["action"] = action
         self.data["type"] = type
         self.data["item_id"] = item_id
+        self.data["parent_id"] = ""
         self.data["uuid"] = uuid
         self.data["title"] = title
         self.data["description"] = description
@@ -55,6 +56,7 @@ class ImpexMenuTransformer:
         "menu",
         "page",
         "uuid",
+        "parent_id",
         "type",
         "item_id",
         "title",

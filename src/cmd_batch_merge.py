@@ -40,11 +40,15 @@ def batch_merge(find: str, group_by: str) -> None:
                 lines = content.splitlines()
                 if not is_first:
                     lines = list(filter(lambda line: "action" not in line, lines))
+                else:
                     is_first = False
                 count = len(lines)
                 linecount += count
                 typer.echo(f"- {str(count).rjust(4)} | {file}")
-                output += "\n".join(lines)
+                output += "\n".join(lines) + "\n"
+
+        output = output.strip()
+
         typer.echo(f"= {str(linecount).rjust(4)} | lines")
 
         with open(ofile, "w", encoding=CSV_ENCODING) as o:
